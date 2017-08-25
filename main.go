@@ -2,10 +2,15 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 )
 
 var verbose bool = true // TODO
+
+func init() {
+	log.SetFlags(0)
+}
 
 func main() {
 	if len(os.Args) != 2 {

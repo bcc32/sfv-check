@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"errors"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -19,16 +20,17 @@ func parseSfvLine(line string) (filename string, expectedCrc uint32, err error) 
 	filename, hex := line[:len(line)-8], line[len(line)-8:]
 	filename = strings.TrimSpace(filename)
 
-	crc, err := strconv.ParseUint(hex, 16, 32)
-	if err != nil {
-		return
-	}
-	expectedCrc = uint32(crc)
-
 	if filename == "" {
 		err = errMalformedSfvLine
 		return
 	}
+
+	crc, err := strconv.ParseUint(hex, 16, 32)
+	if err != nil {
+		err = errMalformedSfvLine
+		return
+	}
+	expectedCrc = uint32(crc)
 
 	return
 }
@@ -46,13 +48,13 @@ func checkSfvFile(sfvFilename string) error {
 	for lineNumber := 1; scanner.Scan(); lineNumber++ {
 		filename, expectedCrc, err := parseSfvLine(scanner.Text())
 		if err != nil {
-			log.Fatal("%s:%d: %s", sfvFilename, lineNumber, err)
+			log.Fatalf("%s:%d: %s", sfvFilename, lineNumber, err)
 		}
 
 		err = checkFile(filename, expectedCrc)
 		if err != nil {
 			fileErrors = append(fileErrors, err)
-			log.Println(err)
+			log.Print(err)
 		} else if verbose {
 			log.Printf("%s: OK", filename)
 		}
