@@ -5,21 +5,20 @@ import (
 	"hash/crc32"
 	"io"
 	"os"
-	"strings"
 )
 
 type errMismatch struct {
 	filename    string
-	expectedCrc string
-	actualCrc   string
+	expectedCrc uint32
+	actualCrc   uint32
 }
 
 func (this errMismatch) Error() string {
 	return fmt.Sprintf(
-		"%s: NOT OK, expected %s got %s",
+		"%s: NOT OK, expected %08X got %08X",
 		this.filename,
-		strings.ToUpper(this.expectedCrc),
-		strings.ToUpper(this.actualCrc),
+		this.expectedCrc,
+		this.actualCrc,
 	)
 }
 
@@ -34,7 +33,7 @@ func (this errFileOpen) Error() string {
 	)
 }
 
-func checkFile(filename string, expectedCrc string) error {
+func checkFile(filename string, expectedCrc uint32) error {
 	file, err := os.OpenFile(filename, os.O_RDONLY, 0)
 	if err != nil {
 		return errFileOpen{filename}
@@ -44,10 +43,9 @@ func checkFile(filename string, expectedCrc string) error {
 
 	io.Copy(hash, file)
 
-	crc32 := hash.Sum32()
-	actualCrc := fmt.Sprintf("%08X", crc32)
+	actualCrc := hash.Sum32()
 
-	if !strings.EqualFold(expectedCrc, actualCrc) {
+	if expectedCrc != actualCrc {
 		return errMismatch{filename, expectedCrc, actualCrc}
 	}
 

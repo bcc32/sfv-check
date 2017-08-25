@@ -4,19 +4,26 @@ import (
 	"bufio"
 	"errors"
 	"os"
+	"strconv"
 	"strings"
 )
 
 var errMalformedSfvLine = errors.New("malformed SFV line")
 
-func parseSfvLine(line string) (filename, expectedCrc string, err error) {
+func parseSfvLine(line string) (filename string, expectedCrc uint32, err error) {
 	if len(line) < 8 {
 		err = errMalformedSfvLine
 		return
 	}
 
-	filename, expectedCrc = line[:len(line)-8], line[len(line)-8:]
+	filename, hex := line[:len(line)-8], line[len(line)-8:]
 	filename = strings.TrimSpace(filename)
+
+	crc, err := strconv.ParseUint(hex, 16, 32)
+	if err != nil {
+		return
+	}
+	expectedCrc = uint32(crc)
 
 	if filename == "" {
 		err = errMalformedSfvLine
