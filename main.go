@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 )
@@ -15,14 +14,12 @@ func init() {
 func main() {
 	if len(os.Args) != 2 {
 		log.Fatalf("Usage: %s SFV-FILE", os.Args[0])
-		os.Exit(1)
 	}
 
 	sfvFile := os.Args[1]
 	err := checkSfvFile(sfvFile)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%s: %s\n", os.Args[0], err)
-		os.Exit(1)
+		log.Fatalf("%s: %s\n", os.Args[0], err)
 	}
 }
