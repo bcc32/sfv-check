@@ -3,16 +3,15 @@ package main
 import (
 	"bufio"
 	"errors"
-	"fmt"
 	"os"
 	"strings"
 )
 
-var malformedSfvLine = errors.New("malformed SFV line")
+var errMalformedSfvLine = errors.New("malformed SFV line")
 
 func parseSfvLine(line string) (filename, expectedCrc string, err error) {
 	if len(line) < 8 {
-		err = malformedSfvLine
+		err = errMalformedSfvLine
 		return
 	}
 
@@ -20,7 +19,7 @@ func parseSfvLine(line string) (filename, expectedCrc string, err error) {
 	filename = strings.TrimSpace(filename)
 
 	if filename == "" {
-		err = malformedSfvLine
+		err = errMalformedSfvLine
 		return
 	}
 
@@ -40,12 +39,15 @@ func checkSfvFile(sfvFilename string) error {
 	for lineNumber := 1; scanner.Scan(); lineNumber++ {
 		filename, expectedCrc, err := parseSfvLine(scanner.Text())
 		if err != nil {
-			// TODO use log package
-			fmt.Printf("%s:%d: %s\n", sfvFilename, lineNumber, err)
+			log.Fatal("%s:%d: %s", sfvFilename, lineNumber, err)
 		}
+
 		err = checkFile(filename, expectedCrc)
 		if err != nil {
 			fileErrors = append(fileErrors, err)
+			log.Println(err)
+		} else if verbose {
+			log.Printf("%s: OK", filename)
 		}
 	}
 
