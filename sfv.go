@@ -55,7 +55,7 @@ func checkSfvFile(sfvFilename string) error {
 		if err != nil {
 			fileErrors = append(fileErrors, err)
 			log.Print(err)
-		} else if verbose {
+		} else if !quiet {
 			log.Printf("%s: OK", filename)
 		}
 	}

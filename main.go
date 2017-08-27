@@ -1,22 +1,41 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"log"
 	"os"
 )
 
-var verbose bool = true // TODO
+var quiet bool
 
 func init() {
 	log.SetFlags(0)
+
+	const (
+		defaultQuiet = false
+		usageQuiet   = "suppress OK output for each correct file"
+	)
+
+	flag.BoolVar(&quiet, "quiet", defaultQuiet, usageQuiet)
+	flag.BoolVar(&quiet, "q", defaultQuiet, usageQuiet+" (shorthand)")
+
+	flag.Usage = func() {
+		fmt.Fprintf(os.Stderr, "Usage: %s [options] SFV-FILE\n", os.Args[0])
+		flag.PrintDefaults()
+	}
 }
 
 func main() {
-	if len(os.Args) != 2 {
-		log.Fatalf("Usage: %s SFV-FILE", os.Args[0])
+	flag.Parse()
+
+	if flag.NArg() != 1 {
+		flag.Usage()
+		os.Exit(1)
 	}
 
-	sfvFile := os.Args[1]
+	sfvFile := flag.Arg(0)
+
 	err := checkSfvFile(sfvFile)
 
 	if err != nil {
