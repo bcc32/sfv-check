@@ -6,7 +6,7 @@ A simple utility for verifying file contents as specified by an
 ## Usage
 
 ```
-Usage: sfv-check SFV-FILE
+Usage: sfv-check SFV-FILE [SFV-FILE]...
   -q	suppress OK output for each correct file (shorthand)
   -quiet
         suppress OK output for each correct file
