@@ -46,6 +46,9 @@ func checkSfvFile(sfvFilename string) error {
 	var fileErrors multiError
 
 	for lineNumber := 1; scanner.Scan(); lineNumber++ {
+		if strings.HasPrefix(scanner.Text(), ";") {
+			continue
+		}
 		filename, expectedCrc, err := parseSfvLine(scanner.Text())
 		if err != nil {
 			log.Fatalf("%s:%d: %s", sfvFilename, lineNumber, err)
