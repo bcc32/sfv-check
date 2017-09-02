@@ -8,6 +8,8 @@ import (
 	"os"
 )
 
+var quiet bool
+
 func init() {
 	log.SetFlags(0)
 
@@ -16,8 +18,8 @@ func init() {
 		usageQuiet   = "suppress OK output for each correct file"
 	)
 
-	flag.BoolVar(&sfv.Quiet, "quiet", defaultQuiet, usageQuiet)
-	flag.BoolVar(&sfv.Quiet, "q", defaultQuiet, usageQuiet+" (shorthand)")
+	flag.BoolVar(&quiet, "quiet", defaultQuiet, usageQuiet)
+	flag.BoolVar(&quiet, "q", defaultQuiet, usageQuiet+" (shorthand)")
 
 	flag.Usage = func() {
 		fmt.Fprintf(
@@ -27,6 +29,59 @@ func init() {
 		)
 		flag.PrintDefaults()
 	}
+}
+
+func checkSfvFile(filename string) error {
+	var fileErrors sfv.ErrorSummary
+
+	scanner, err := sfv.NewSfvFileScanner(filename)
+	if err != nil {
+		return err
+	}
+
+	for {
+		for scanner.Scan() {
+			entry := scanner.Entry()
+			crc32, err := sfv.Crc32File(entry.Filename)
+
+			if err != nil {
+				fileErrors = append(fileErrors, err)
+				log.Print(err)
+				continue
+			}
+
+			if entry.ExpectedCrc != crc32 {
+				err := sfv.ErrMismatch{
+					Filename:    entry.Filename,
+					ExpectedCrc: entry.ExpectedCrc,
+					ActualCrc:   crc32,
+				}
+				log.Print(err)
+				fileErrors = append(fileErrors, err)
+				continue
+			}
+
+			if !quiet {
+				log.Printf("%s: OK", entry.Filename)
+			}
+		}
+		if err := scanner.Err(); err != nil {
+			log.Print(err)
+		} else {
+			break
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return err
+	}
+
+	// necessary because `fileErrors` is declared with a concrete type
+	if fileErrors == nil {
+		return nil
+	}
+
+	return fileErrors
 }
 
 func main() {
@@ -42,7 +97,7 @@ func main() {
 	success := true
 
 	for _, file := range sfvFiles {
-		err := sfv.CheckSfvFile(file)
+		err := checkSfvFile(file)
 
 		if err != nil {
 			success = false

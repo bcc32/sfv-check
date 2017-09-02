@@ -3,23 +3,25 @@ package sfv
 import (
 	"errors"
 	"fmt"
+	"reflect"
 	"strings"
 )
 
 var errEmptyMultiError = errors.New("Error() called on empty multiError")
 
-type errorSummary []error
+type ErrorSummary []error
 
-func (this errorSummary) Error() string {
+func (this ErrorSummary) Error() string {
 	mismatches := 0
 	fileErrs := 0
 	for _, e := range this {
 		if e != nil {
 			if _, ok := e.(ErrMismatch); ok {
 				mismatches++
-			}
-			if _, ok := e.(ErrFileOpen); ok {
+			} else if _, ok := e.(errFileOpen); ok {
 				fileErrs++
+			} else {
+				panic("not a recognized error: " + reflect.TypeOf(e).String())
 			}
 		}
 	}

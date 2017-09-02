@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -14,24 +13,39 @@ var Quiet = false
 
 var ErrMalformedSfvLine = errors.New("malformed SFV line")
 
+type ErrParse struct {
+	err         error
+	sfvFilename string
+	lineNumber  int
+}
+
+func (this ErrParse) Error() string {
+	return fmt.Sprintf(
+		"%s:%d: %s",
+		this.sfvFilename,
+		this.lineNumber,
+		this.err.Error(),
+	)
+}
+
 type ErrMismatch struct {
-	filename    string
-	expectedCrc uint32
-	actualCrc   uint32
+	Filename    string
+	ExpectedCrc uint32
+	ActualCrc   uint32
 }
 
 func (this ErrMismatch) Error() string {
 	return fmt.Sprintf(
 		"%s: NOT OK, expected %08X got %08X",
-		this.filename,
-		this.expectedCrc,
-		this.actualCrc,
+		this.Filename,
+		this.ExpectedCrc,
+		this.ActualCrc,
 	)
 }
 
 type Entry struct {
-	filename    string
-	expectedCrc uint32
+	Filename    string
+	ExpectedCrc uint32
 }
 
 func parseSfvLine(line string) (entry Entry, err error) {
@@ -41,9 +55,9 @@ func parseSfvLine(line string) (entry Entry, err error) {
 	}
 
 	filename, hex := line[:len(line)-8], line[len(line)-8:]
-	entry.filename = strings.TrimSpace(filename)
+	entry.Filename = strings.TrimSpace(filename)
 
-	if entry.filename == "" {
+	if entry.Filename == "" {
 		err = ErrMalformedSfvLine
 		return
 	}
@@ -53,56 +67,59 @@ func parseSfvLine(line string) (entry Entry, err error) {
 		err = ErrMalformedSfvLine
 		return
 	}
-	entry.expectedCrc = uint32(crc)
+	entry.ExpectedCrc = uint32(crc)
 
 	return
 }
 
-func CheckSfvFile(sfvFilename string) error {
-	file, err := os.OpenFile(sfvFilename, os.O_RDONLY, 0)
+type SfvFileScanner struct {
+	input      *bufio.Scanner
+	filename   string
+	entry      Entry
+	err        error
+	lineNumber int
+}
+
+func NewSfvFileScanner(filename string) (*SfvFileScanner, error) {
+	file, err := os.Open(filename)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	scanner := bufio.NewScanner(file)
+	return &SfvFileScanner{
+		input:    bufio.NewScanner(file),
+		filename: filename,
+	}, nil
+}
 
-	var fileErrors errorSummary
+func (this *SfvFileScanner) Scan() bool {
+	for this.input.Scan() {
+		line := this.input.Text()
+		this.lineNumber++
 
-	for lineNumber := 1; scanner.Scan(); lineNumber++ {
-		if strings.HasPrefix(scanner.Text(), ";") {
+		if strings.HasPrefix(line, ";") {
 			continue
 		}
-		entry, err := parseSfvLine(scanner.Text())
+
+		entry, err := parseSfvLine(line)
 		if err != nil {
-			log.Fatalf("%s:%d: %s", sfvFilename, lineNumber, err)
+			this.err = ErrParse{err, this.filename, this.lineNumber}
+			return false
 		}
 
-		crc32, err := crc32File(entry.filename)
-		if err != nil {
-			fileErrors = append(fileErrors, err)
-			log.Print(err)
-		} else {
-			if entry.expectedCrc != crc32 {
-				log.Printf(
-					"%s: NOT OK, expected %08X but got %08X",
-					entry.filename,
-					entry.expectedCrc,
-					crc32,
-				)
-			} else if !Quiet {
-				log.Printf("%s: OK", entry.filename)
-			}
-		}
+		this.entry = entry
+		return true
 	}
 
-	if err := scanner.Err(); err != nil {
-		return err
-	}
+	return false
+}
 
-	// necessary because `fileErrors` is declared with a concrete type
-	if fileErrors == nil {
-		return nil
-	}
+func (this SfvFileScanner) Entry() Entry {
+	return this.entry
+}
 
-	return fileErrors
+func (this SfvFileScanner) Err() error {
+	err := this.err
+	this.err = nil
+	return err
 }

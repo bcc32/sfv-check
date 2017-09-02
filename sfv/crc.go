@@ -7,21 +7,21 @@ import (
 	"os"
 )
 
-type ErrFileOpen struct {
+type errFileOpen struct {
 	filename string
 }
 
-func (this ErrFileOpen) Error() string {
+func (this errFileOpen) Error() string {
 	return fmt.Sprintf(
 		"%s: NOT OK, file could not be read",
 		this.filename,
 	)
 }
 
-func crc32File(filename string) (uint32, error) {
+func Crc32File(filename string) (uint32, error) {
 	file, err := os.OpenFile(filename, os.O_RDONLY, 0)
 	if err != nil {
-		return 0, ErrFileOpen{filename}
+		return 0, errFileOpen{filename}
 	}
 
 	hash := crc32.NewIEEE()
