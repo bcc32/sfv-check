@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
-	"strings"
 )
 
 var errEmptyMultiError = errors.New("Error() called on empty multiError")
@@ -26,19 +25,13 @@ func (this ErrorSummary) Error() string {
 		}
 	}
 
-	var lines []string
-	if mismatches > 0 {
-		msg := fmt.Sprintf("%d file(s) did NOT match", mismatches)
-		lines = append(lines, msg)
-	}
-	if fileErrs > 0 {
-		msg := fmt.Sprintf("%d file(s) could NOT be read", fileErrs)
-		lines = append(lines, msg)
-	}
-
-	if len(lines) == 0 {
+	if mismatches == 0 && fileErrs == 0 {
 		panic(errEmptyMultiError)
 	}
 
-	return strings.Join(lines, "\n")
+	return fmt.Sprintf(
+		"%d mismatches, %d missing/unreadable files",
+		mismatches,
+		fileErrs,
+	)
 }
