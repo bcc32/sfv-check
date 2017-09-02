@@ -45,7 +45,7 @@ func checkSfvFile(filename string) error {
 			crc32, err := sfv.Crc32File(entry.Filename)
 
 			if err != nil {
-				fileErrors = append(fileErrors, err)
+				fileErrors.Add(err)
 				log.Print(err)
 				continue
 			}
@@ -57,7 +57,7 @@ func checkSfvFile(filename string) error {
 					ActualCrc:   crc32,
 				}
 				log.Print(err)
-				fileErrors = append(fileErrors, err)
+				fileErrors.Add(err)
 				continue
 			}
 
@@ -76,12 +76,7 @@ func checkSfvFile(filename string) error {
 		return err
 	}
 
-	// necessary because `fileErrors` is declared with a concrete type
-	if fileErrors == nil {
-		return nil
-	}
-
-	return fileErrors
+	return fileErrors.Summary()
 }
 
 func main() {

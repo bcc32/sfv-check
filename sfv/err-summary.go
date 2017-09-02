@@ -8,30 +8,40 @@ import (
 
 var errEmptyMultiError = errors.New("Error() called on empty multiError")
 
-type ErrorSummary []error
+type ErrorSummary struct {
+	mismatches int
+	fileErrors int
+}
 
-func (this ErrorSummary) Error() string {
+func (this ErrorSummary) Add(err error) {
 	mismatches := 0
 	fileErrs := 0
-	for _, e := range this {
-		if e != nil {
-			if _, ok := e.(ErrMismatch); ok {
-				mismatches++
-			} else if _, ok := e.(errFileOpen); ok {
-				fileErrs++
-			} else {
-				panic("not a recognized error: " + reflect.TypeOf(e).String())
-			}
+	if err != nil {
+		if _, ok := err.(ErrMismatch); ok {
+			mismatches++
+		} else if _, ok := err.(errFileOpen); ok {
+			fileErrs++
+		} else {
+			panic("not a recognized error: " + reflect.TypeOf(err).String())
 		}
 	}
+}
 
-	if mismatches == 0 && fileErrs == 0 {
+func (this ErrorSummary) Summary() error {
+	if this.mismatches == 0 || this.fileErrors == 0 {
+		return nil
+	}
+	return this
+}
+
+func (this ErrorSummary) Error() string {
+	if this.mismatches == 0 && this.fileErrors == 0 {
 		panic(errEmptyMultiError)
 	}
 
 	return fmt.Sprintf(
 		"%d mismatches, %d missing/unreadable files",
-		mismatches,
-		fileErrs,
+		this.mismatches,
+		this.fileErrors,
 	)
 }
