@@ -3,11 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/bcc32/sfv-check/sfv"
 	"log"
 	"os"
 )
-
-var quiet bool
 
 func init() {
 	log.SetFlags(0)
@@ -17,8 +16,8 @@ func init() {
 		usageQuiet   = "suppress OK output for each correct file"
 	)
 
-	flag.BoolVar(&quiet, "quiet", defaultQuiet, usageQuiet)
-	flag.BoolVar(&quiet, "q", defaultQuiet, usageQuiet+" (shorthand)")
+	flag.BoolVar(&sfv.Quiet, "quiet", defaultQuiet, usageQuiet)
+	flag.BoolVar(&sfv.Quiet, "q", defaultQuiet, usageQuiet+" (shorthand)")
 
 	flag.Usage = func() {
 		fmt.Fprintf(
@@ -43,7 +42,7 @@ func main() {
 	success := true
 
 	for _, file := range sfvFiles {
-		err := checkSfvFile(file)
+		err := sfv.CheckSfvFile(file)
 
 		if err != nil {
 			success = false

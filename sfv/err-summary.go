@@ -1,4 +1,4 @@
-package main
+package sfv
 
 import (
 	"errors"
@@ -8,17 +8,17 @@ import (
 
 var errEmptyMultiError = errors.New("Error() called on empty multiError")
 
-type multiError []error
+type errorSummary []error
 
-func (this multiError) Error() string {
+func (this errorSummary) Error() string {
 	mismatches := 0
 	fileErrs := 0
 	for _, e := range this {
 		if e != nil {
-			if _, ok := e.(errMismatch); ok {
+			if _, ok := e.(ErrMismatch); ok {
 				mismatches++
 			}
-			if _, ok := e.(errFileOpen); ok {
+			if _, ok := e.(ErrFileOpen); ok {
 				fileErrs++
 			}
 		}
