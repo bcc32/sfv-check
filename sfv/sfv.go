@@ -9,17 +9,15 @@ import (
 	"strings"
 )
 
-var Quiet = false
+var errMalformedSfvLine = errors.New("malformed SFV line")
 
-var ErrMalformedSfvLine = errors.New("malformed SFV line")
-
-type ErrParse struct {
+type errParse struct {
 	err         error
 	sfvFilename string
 	lineNumber  int
 }
 
-func (this ErrParse) Error() string {
+func (this errParse) Error() string {
 	return fmt.Sprintf(
 		"%s:%d: %s",
 		this.sfvFilename,
@@ -50,7 +48,7 @@ type Entry struct {
 
 func parseSfvLine(line string) (entry Entry, err error) {
 	if len(line) < 8 {
-		err = ErrMalformedSfvLine
+		err = errMalformedSfvLine
 		return
 	}
 
@@ -58,13 +56,13 @@ func parseSfvLine(line string) (entry Entry, err error) {
 	entry.Filename = strings.TrimSpace(filename)
 
 	if entry.Filename == "" {
-		err = ErrMalformedSfvLine
+		err = errMalformedSfvLine
 		return
 	}
 
 	crc, err := strconv.ParseUint(hex, 16, 32)
 	if err != nil {
-		err = ErrMalformedSfvLine
+		err = errMalformedSfvLine
 		return
 	}
 	entry.ExpectedCrc = uint32(crc)
@@ -103,7 +101,7 @@ func (this *SfvFileScanner) Scan() bool {
 
 		entry, err := parseSfvLine(line)
 		if err != nil {
-			this.err = ErrParse{err, this.filename, this.lineNumber}
+			this.err = errParse{err, this.filename, this.lineNumber}
 			return false
 		}
 
