@@ -27,7 +27,7 @@ func CRC32File(filename string) (crc uint32, error error) {
 
 	_, err = io.Copy(hash, file)
 	if err != nil {
-		error := err
+		error = err
 		return
 	}
 
