@@ -26,6 +26,8 @@ func (e errParse) Error() string {
 	)
 }
 
+// ErrMismatch represents a mismatch between the expected and actual CRC-32
+// checksums of the named file.
 type ErrMismatch struct {
 	Filename    string
 	ExpectedCrc uint32
@@ -41,6 +43,8 @@ func (e ErrMismatch) Error() string {
 	)
 }
 
+// Entry represents an SFV line, consisting of the named file and its expected
+// CRC-32 checksum.
 type Entry struct {
 	Filename    string
 	ExpectedCrc uint32
@@ -70,6 +74,8 @@ func parseSfvLine(line string) (entry Entry, err error) {
 	return
 }
 
+// A FileScanner parses an SFV file, reporting any syntax or I/O errors
+// encountered.
 type FileScanner struct {
 	input      *bufio.Scanner
 	filename   string
@@ -78,7 +84,9 @@ type FileScanner struct {
 	lineNumber int
 }
 
-func NewSfvFileScanner(filename string) (*FileScanner, error) {
+// NewFileScanner constructs a new FileScanner, returning an error if the named
+// file cannot be opened.
+func NewFileScanner(filename string) (*FileScanner, error) {
 	file, err := os.Open(filename)
 	if err != nil {
 		return nil, err
@@ -90,6 +98,8 @@ func NewSfvFileScanner(filename string) (*FileScanner, error) {
 	}, nil
 }
 
+// Scan scans through the file for the next SFV entry, returning true if it
+// finds one. It returns false if an I/O or syntax error is encountered.
 func (fs *FileScanner) Scan() bool {
 	for fs.input.Scan() {
 		line := fs.input.Text()
@@ -109,15 +119,19 @@ func (fs *FileScanner) Scan() bool {
 		return true
 	}
 
+	fs.err = nil
 	return false
 }
 
+// Entry returns the last entry parsed by Scan. It should only be called after a
+// call to Scan returns true.
 func (fs *FileScanner) Entry() Entry {
 	return fs.entry
 }
 
+// Err returns the last error encountered by Scan. It should only be called
+// after a call to Scan returns false. If Err returns nil, then the end of the
+// file has been reached without error.
 func (fs *FileScanner) Err() error {
-	err := fs.err
-	fs.err = nil
-	return err
+	return fs.err
 }
