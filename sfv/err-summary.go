@@ -13,21 +13,19 @@ type ErrorSummary struct {
 	fileErrors int
 }
 
-func (this ErrorSummary) Add(err error) {
-	mismatches := 0
-	fileErrs := 0
+func (this *ErrorSummary) Add(err error) {
 	if err != nil {
 		if _, ok := err.(ErrMismatch); ok {
-			mismatches++
+			this.mismatches++
 		} else if _, ok := err.(errFileOpen); ok {
-			fileErrs++
+			this.fileErrors++
 		} else {
 			panic("not a recognized error: " + reflect.TypeOf(err).String())
 		}
 	}
 }
 
-func (this ErrorSummary) Summary() error {
+func (this *ErrorSummary) Summary() error {
 	if this.mismatches == 0 && this.fileErrors == 0 {
 		return nil
 	}
@@ -40,7 +38,7 @@ func (this ErrorSummary) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"%d mismatches, %d missing/unreadable files",
+		"%d bad CRCs, %d not found",
 		this.mismatches,
 		this.fileErrors,
 	)
