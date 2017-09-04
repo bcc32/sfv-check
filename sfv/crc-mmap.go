@@ -19,6 +19,10 @@ func Crc32File(filename string) (uint32, error) {
 		return 0, errFileOpen{err, filename}
 	}
 
+	if stat.Size == 0 {
+		return 0, nil
+	}
+
 	buf, err := syscall.Mmap(fd, 0, int(stat.Size),
 		syscall.PROT_READ, syscall.MAP_SHARED)
 	if err != nil {
