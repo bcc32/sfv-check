@@ -44,7 +44,7 @@ func init() {
 
 // checkSFVFile returns an error only if the SFV file cannot be read or is
 // malformed. File mismatches and errors are recorded in results.
-func checkSFVFile(filename string, results *sfv.ErrorSummary) error {
+func checkSFVFile(filename string, results *sfv.ResultSummary) error {
 	scanner, err := sfv.NewFileScanner(filename)
 	if err != nil {
 		return err
@@ -78,7 +78,7 @@ func checkSFVFile(filename string, results *sfv.ErrorSummary) error {
 
 // tapSFVFile returns an error only if the SFV file cannot be read or is
 // malformed. File mismatches and errors are recorded in results.
-func tapSFVFile(filename string, results *sfv.ErrorSummary) error {
+func tapSFVFile(filename string, results *sfv.ResultSummary) error {
 	entries, err := sfv.ReadAll(filename)
 	if err != nil {
 		return err
@@ -106,7 +106,7 @@ func main() {
 	sfvFiles := flag.Args()
 
 	var exitCode int
-	var results sfv.ErrorSummary
+	var results sfv.ResultSummary
 
 	if tap {
 		if len(sfvFiles) != 1 {

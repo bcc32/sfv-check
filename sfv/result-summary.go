@@ -7,9 +7,9 @@ import (
 
 var errEmptyMultiError = errors.New("Error() called on empty multiError")
 
-// ErrorSummary represents the aggregate errors encountered while checking the
+// ResultSummary represents the aggregate errors encountered while checking the
 // entries in an SFV file.
-type ErrorSummary struct {
+type ResultSummary struct {
 	mismatches int
 	fileErrors int
 	totalTests int
@@ -17,7 +17,7 @@ type ErrorSummary struct {
 
 // Add increments the appropriate errorSummary counters based on the type of the
 // argument.
-func (e *ErrorSummary) Add(r Result) {
+func (e *ResultSummary) Add(r Result) {
 	e.totalTests++
 
 	if err := r.Err(); err != nil {
@@ -29,21 +29,21 @@ func (e *ErrorSummary) Add(r Result) {
 	}
 }
 
-func (e ErrorSummary) empty() bool {
+func (e ResultSummary) empty() bool {
 	return e.mismatches == 0 && e.fileErrors == 0
 }
 
-// Summary returns an error value that is either nil if the ErrorSummary is
-// empty (zero), or the ErrorSummary itself otherwise. This should be called
+// Summary returns an error value that is either nil if the ResultSummary is
+// empty (zero), or the ResultSummary itself otherwise. This should be called
 // prior to calling Error.
-func (e ErrorSummary) Summary() error {
+func (e ResultSummary) Summary() error {
 	if e.empty() {
 		return nil
 	}
 	return e
 }
 
-func (e ErrorSummary) Error() string {
+func (e ResultSummary) Error() string {
 	if e.empty() {
 		panic(errEmptyMultiError)
 	}
