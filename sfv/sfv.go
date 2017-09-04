@@ -56,6 +56,8 @@ func (e Entry) Check() Result {
 	return okResult{e.Filename}
 }
 
+// TODO move result related code to another file, including err-summary.go
+
 // A Result represents the result of checking a single SFV entry.
 type Result interface {
 	fmt.Stringer // format the Result like md5sum(1) and co.

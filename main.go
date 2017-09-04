@@ -51,6 +51,8 @@ func checkSfvFile(filename string) error {
 			results.Add(result)
 
 			if !quiet || result.Err() != nil {
+				// FIXME this is a bit precarious, since missing the call to
+				// String() would result in Error() being called.
 				log.Print(result.String())
 			}
 		}
