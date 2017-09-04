@@ -22,7 +22,7 @@ func maybePanic(err error) {
 	}
 }
 
-func tempFileCrc32(data []byte) (uint32, error) {
+func tempFileCRC32(data []byte) (uint32, error) {
 	f, err := ioutil.TempFile("", "")
 	if err != nil {
 		panic(err)
@@ -34,13 +34,13 @@ func tempFileCrc32(data []byte) (uint32, error) {
 
 	f.Write(data)
 
-	return sfv.Crc32File(f.Name())
+	return sfv.CRC32File(f.Name())
 }
 
-func testCrc32(t *testing.T, expected uint32, data []byte) {
+func testCRC32(t *testing.T, expected uint32, data []byte) {
 	t.Helper()
 
-	actual, err := tempFileCrc32(data)
+	actual, err := tempFileCRC32(data)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -49,23 +49,23 @@ func testCrc32(t *testing.T, expected uint32, data []byte) {
 	}
 }
 
-func TestCrc32File_empty(t *testing.T) {
-	testCrc32(t, 0, []byte{})
+func TestCRC32File_empty(t *testing.T) {
+	testCRC32(t, 0, []byte{})
 }
 
-func TestCrc32File_nonempty(t *testing.T) {
-	testCrc32(t, 0x7C9CA35A, []byte{0xDE, 0xAD, 0xBE, 0xEF})
+func TestCRC32File_nonempty(t *testing.T) {
+	testCRC32(t, 0x7C9CA35A, []byte{0xDE, 0xAD, 0xBE, 0xEF})
 }
 
-func TestCrc32File_noFile(t *testing.T) {
-	_, err := sfv.Crc32File("/zzzzzzzz")
+func TestCRC32File_noFile(t *testing.T) {
+	_, err := sfv.CRC32File("/zzzzzzzz")
 	if err == nil {
 		t.Fatal("expected error")
 	}
 }
 
-func TestCrc32File_noFile_emptyName(t *testing.T) {
-	_, err := sfv.Crc32File("")
+func TestCRC32File_noFile_emptyName(t *testing.T) {
+	_, err := sfv.CRC32File("")
 	if err == nil {
 		t.Fatal("expected error")
 	}
@@ -104,7 +104,7 @@ func makeRandomFile(size int64) (filename string, crc uint32, error error) {
 	return
 }
 
-func BenchmarkCrc32File_64MB(b *testing.B) {
+func BenchmarkCRC32File_64MB(b *testing.B) {
 	var bytes int64 = 64 * megabyte
 	b.SetBytes(int64(bytes))
 
@@ -119,7 +119,7 @@ func BenchmarkCrc32File_64MB(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		actual, err := sfv.Crc32File(filename)
+		actual, err := sfv.CRC32File(filename)
 		if err != nil {
 			b.Fatal(err)
 		}

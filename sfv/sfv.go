@@ -40,16 +40,16 @@ func (e errParse) Error() string {
 // checksums of the named file.
 type ErrMismatch struct {
 	Filename    string
-	ExpectedCrc uint32
-	ActualCrc   uint32
+	ExpectedCRC uint32
+	ActualCRC   uint32
 }
 
 func (e ErrMismatch) Error() string {
 	return fmt.Sprintf(
 		"%s: NOT OK, expected %08X got %08X",
 		e.Filename,
-		e.ExpectedCrc,
-		e.ActualCrc,
+		e.ExpectedCRC,
+		e.ActualCRC,
 	)
 }
 
@@ -57,7 +57,7 @@ func (e ErrMismatch) Error() string {
 // CRC-32 checksum.
 type Entry struct {
 	Filename    string
-	ExpectedCrc uint32
+	ExpectedCRC uint32
 }
 
 func parseSfvLine(line string) (entry Entry, err error) {
@@ -79,7 +79,7 @@ func parseSfvLine(line string) (entry Entry, err error) {
 		err = errMalformedSfvLine
 		return
 	}
-	entry.ExpectedCrc = uint32(crc)
+	entry.ExpectedCRC = uint32(crc)
 
 	return
 }

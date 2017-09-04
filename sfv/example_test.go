@@ -6,8 +6,8 @@ import (
 	"github.com/bcc32/sfv-check/sfv"
 )
 
-func ExampleCrc32File() {
-	crc, err := sfv.Crc32File("testdata/test-file.go")
+func ExampleCRC32File() {
+	crc, err := sfv.CRC32File("testdata/test-file.go")
 	if err != nil {
 		panic(err)
 	}
@@ -29,5 +29,5 @@ func ExampleFileScanner() {
 	fmt.Printf("%+v\n", fs.Entry())
 	// Output:
 	// true
-	// {Filename:test-file.go ExpectedCrc:2818931190}
+	// {Filename:test-file.go ExpectedCRC:2818931190}
 }

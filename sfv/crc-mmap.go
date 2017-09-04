@@ -7,8 +7,8 @@ import (
 	"syscall"
 )
 
-// Crc32File computes the IEEE CRC-32 checksum of the named file.
-func Crc32File(filename string) (crc uint32, error error) {
+// CRC32File computes the IEEE CRC-32 checksum of the named file.
+func CRC32File(filename string) (crc uint32, error error) {
 	fd, err := syscall.Open(filename, syscall.O_RDONLY, 0)
 	if err != nil {
 		error = err
