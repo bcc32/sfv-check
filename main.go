@@ -44,8 +44,8 @@ func checkSFVFile(filename string, results *sfv.ErrorSummary) error {
 	for {
 		for scanner.Scan() {
 			entry := scanner.Entry()
-			result := entry.Check()
 
+			result := entry.Check()
 			results.Add(result)
 
 			if !quiet || result.Err() != nil {
