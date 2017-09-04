@@ -25,15 +25,19 @@ func (this *ErrorSummary) Add(err error) {
 	}
 }
 
+func (this ErrorSummary) empty() bool {
+	return this.mismatches == 0 && this.fileErrors == 0
+}
+
 func (this *ErrorSummary) Summary() error {
-	if this.mismatches == 0 && this.fileErrors == 0 {
+	if this.empty() {
 		return nil
 	}
 	return this
 }
 
 func (this ErrorSummary) Error() string {
-	if this.mismatches == 0 && this.fileErrors == 0 {
+	if this.empty() {
 		panic(errEmptyMultiError)
 	}
 
