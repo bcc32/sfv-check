@@ -36,7 +36,7 @@ func init() {
 }
 
 func checkSfvFile(filename string) error {
-	var fileErrors errorSummary
+	var fileErrors sfv.ErrorSummary
 
 	scanner, err := sfv.NewFileScanner(filename)
 	if err != nil {
