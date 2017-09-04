@@ -13,17 +13,24 @@ import (
 )
 
 var quiet bool
+var tap bool
 
 func init() {
 	log.SetFlags(0)
+	log.SetOutput(os.Stdout)
 
 	const (
 		defaultQuiet = false
 		usageQuiet   = "suppress OK output for each correct file"
+
+		defaultTap = false
+		usageTap   = "print results in TAP format"
 	)
 
 	flag.BoolVar(&quiet, "quiet", defaultQuiet, usageQuiet)
 	flag.BoolVar(&quiet, "q", defaultQuiet, usageQuiet+" (shorthand)")
+
+	flag.BoolVar(&tap, "tap", defaultTap, usageTap)
 
 	flag.Usage = func() {
 		fmt.Fprintf(
@@ -32,6 +39,18 @@ func init() {
 			os.Args[0],
 		)
 		flag.PrintDefaults()
+	}
+}
+
+func displayResult(r sfv.Result) {
+	if tap {
+		log.Print(r.TAP())
+		return
+	}
+	if !quiet || r.Err() != nil {
+		// FIXME this is a bit precarious, since missing the call to
+		// String() would result in Error() being called.
+		log.Print(r.String())
 	}
 }
 
@@ -47,12 +66,7 @@ func checkSFVFile(filename string, results *sfv.ErrorSummary) error {
 
 			result := entry.Check()
 			results.Add(result)
-
-			if !quiet || result.Err() != nil {
-				// FIXME this is a bit precarious, since missing the call to
-				// String() would result in Error() being called.
-				log.Print(result.String())
-			}
+			displayResult(result)
 		}
 		if err := scanner.Err(); err != nil {
 			log.Print(err)
