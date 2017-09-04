@@ -8,15 +8,23 @@ import (
 	"os"
 )
 
-func Crc32File(filename string) (uint32, error) {
+func Crc32File(filename string) (crc uint32, error error) {
 	file, err := os.Open(filename)
 	if err != nil {
-		return 0, errFileOpen{err, filename}
+		error = err
+		return
 	}
+
+	defer func() {
+		err := file.Close()
+		if err != nil {
+			error = err
+		}
+	}()
 
 	hash := crc32.NewIEEE()
 
 	io.Copy(hash, file)
-
-	return hash.Sum32(), nil
+	crc = hash.Sum32()
+	return
 }
