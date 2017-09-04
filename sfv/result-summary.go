@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-var errEmptyMultiError = errors.New("Error() called on empty multiError")
+var errEmptyResultSummary = errors.New("Error() called on empty resultSummary")
 
 // ResultSummary represents the aggregate errors encountered while checking the
 // entries in an SFV file.
@@ -42,7 +42,7 @@ func (e ResultSummary) Summary() error {
 
 func (e ResultSummary) Error() string {
 	if e.empty() {
-		panic(errEmptyMultiError)
+		panic(errEmptyResultSummary)
 	}
 
 	return fmt.Sprintf(
