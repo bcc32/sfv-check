@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	MEGABYTE = 1024 * 1024
+	megabyte = 1024 * 1024
 )
 
 func maybePanic(err error) {
@@ -103,7 +103,7 @@ func makeRandomFile(size int64) (filename string, crc uint32, error error) {
 }
 
 func BenchmarkCrc32File_64MB(b *testing.B) {
-	var bytes int64 = 64 * MEGABYTE
+	var bytes int64 = 64 * megabyte
 	b.SetBytes(int64(bytes))
 
 	filename, expected, err := makeRandomFile(bytes)

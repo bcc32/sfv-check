@@ -3,9 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/bcc32/sfv-check/sfv"
 	"log"
 	"os"
+
+	"github.com/bcc32/sfv-check/sfv"
 )
 
 var quiet bool
@@ -34,7 +35,7 @@ func init() {
 func checkSfvFile(filename string) error {
 	var fileErrors sfv.ErrorSummary
 
-	scanner, err := sfv.NewSfvFileScanner(filename)
+	scanner, err := sfv.NewFileScanner(filename)
 	if err != nil {
 		return err
 	}

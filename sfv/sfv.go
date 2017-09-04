@@ -112,11 +112,11 @@ func (fs *FileScanner) Scan() bool {
 	return false
 }
 
-func (fs FileScanner) Entry() Entry {
+func (fs *FileScanner) Entry() Entry {
 	return fs.entry
 }
 
-func (fs FileScanner) Err() error {
+func (fs *FileScanner) Err() error {
 	err := fs.err
 	fs.err = nil
 	return err
