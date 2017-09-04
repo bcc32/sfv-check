@@ -33,11 +33,6 @@ func (e ErrorSummary) empty() bool {
 	return e.mismatches == 0 && e.fileErrors == 0
 }
 
-// TotalTests returns the number of tests added to the ErrorSummary.
-func (e ErrorSummary) TotalTests() int {
-	return e.totalTests
-}
-
 // Summary returns an error value that is either nil if the ErrorSummary is
 // empty (zero), or the ErrorSummary itself otherwise. This should be called
 // prior to calling Error.

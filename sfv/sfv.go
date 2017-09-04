@@ -230,3 +230,24 @@ func (fs *FileScanner) Entry() Entry {
 func (fs *FileScanner) Err() error {
 	return fs.err
 }
+
+// ReadAll reads in the entire named SFV file at once, returning a slice of
+// entries. Returns the first error instead if one is encountered.
+func ReadAll(filename string) ([]Entry, error) {
+	fs, err := NewFileScanner(filename)
+	if err != nil {
+		return nil, err
+	}
+
+	var entries []Entry
+
+	for fs.Scan() {
+		entries = append(entries, fs.Entry())
+	}
+
+	if err := fs.Err(); err != nil {
+		return nil, err
+	}
+
+	return entries, nil
+}

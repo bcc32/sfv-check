@@ -24,7 +24,7 @@ func init() {
 		usageQuiet   = "suppress OK output for each correct file"
 
 		defaultTap = false
-		usageTap   = "print results in TAP format"
+		usageTap   = "print results in TAP format (one SFV file only)"
 	)
 
 	flag.BoolVar(&quiet, "quiet", defaultQuiet, usageQuiet)
@@ -42,18 +42,8 @@ func init() {
 	}
 }
 
-func displayResult(r sfv.Result) {
-	if tap {
-		log.Print(r.TAP())
-		return
-	}
-	if !quiet || r.Err() != nil {
-		// FIXME this is a bit precarious, since missing the call to
-		// String() would result in Error() being called.
-		log.Print(r.String())
-	}
-}
-
+// checkSFVFile returns an error only if the SFV file cannot be read or is
+// malformed. File mismatches and errors are recorded in results.
 func checkSFVFile(filename string, results *sfv.ErrorSummary) error {
 	scanner, err := sfv.NewFileScanner(filename)
 	if err != nil {
@@ -66,7 +56,11 @@ func checkSFVFile(filename string, results *sfv.ErrorSummary) error {
 
 			result := entry.Check()
 			results.Add(result)
-			displayResult(result)
+			if !quiet || result.Err() != nil {
+				// FIXME this is a bit precarious, since missing the call to
+				// String() would result in Error() being called.
+				log.Print(result.String())
+			}
 		}
 		if err := scanner.Err(); err != nil {
 			log.Print(err)
@@ -79,7 +73,27 @@ func checkSFVFile(filename string, results *sfv.ErrorSummary) error {
 		return err
 	}
 
-	return results.Summary()
+	return nil
+}
+
+// tapSFVFile returns an error only if the SFV file cannot be read or is
+// malformed. File mismatches and errors are recorded in results.
+func tapSFVFile(filename string, results *sfv.ErrorSummary) error {
+	entries, err := sfv.ReadAll(filename)
+	if err != nil {
+		return err
+	}
+
+	log.Printf("1..%d\n", len(entries))
+
+	// TODO print out indices
+	for _, entry := range entries {
+		result := entry.Check()
+		results.Add(result)
+		log.Print(result.TAP())
+	}
+
+	return nil
 }
 
 func main() {
@@ -92,21 +106,32 @@ func main() {
 
 	sfvFiles := flag.Args()
 
+	var exitCode int
 	var results sfv.ErrorSummary
 
-	for _, file := range sfvFiles {
-		err := checkSFVFile(file, &results)
+	if tap {
+		if len(sfvFiles) != 1 {
+			log.Fatal("-tap can only be used with one SFV file")
+		}
+		err := tapSFVFile(sfvFiles[0], &results)
 		if err != nil {
 			log.Print(err)
+			exitCode = 1
 		}
-	}
-
-	if tap {
-		fmt.Printf("1..%d\n", results.TotalTests())
+	} else {
+		for _, file := range sfvFiles {
+			err := checkSFVFile(file, &results)
+			if err != nil {
+				log.Print(err)
+				exitCode = 1
+			}
+		}
 	}
 
 	if err := results.Summary(); err != nil {
 		log.Printf("%s: %s\n", os.Args[0], err)
-		os.Exit(1)
+		exitCode = 1
 	}
+
+	os.Exit(exitCode)
 }
