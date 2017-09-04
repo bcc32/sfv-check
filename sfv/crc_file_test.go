@@ -1,9 +1,17 @@
 package sfv
 
 import (
+	"hash/crc32"
+	"io"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"testing"
+	"time"
+)
+
+const (
+	MEGABYTE = 1024 * 1024
 )
 
 func maybePanic(err error) {
@@ -58,5 +66,63 @@ func TestCrc32File_noFile_emptyName(t *testing.T) {
 	_, err := Crc32File("")
 	if err == nil {
 		t.Fatal("expected error")
+	}
+}
+
+var random *rand.Rand
+
+func init() {
+	random = rand.New(rand.NewSource(time.Now().UnixNano()))
+}
+
+func makeRandomFile(size int64) (filename string, crc uint32, error error) {
+	file, err := ioutil.TempFile("", "")
+	if err != nil {
+		error = err
+		return
+	}
+	defer func() {
+		err := file.Close()
+		if err != nil {
+			error = err
+		}
+	}()
+
+	hash := crc32.NewIEEE()
+	writer := io.MultiWriter(file, hash)
+
+	_, err = io.CopyN(writer, random, size)
+	if err != nil {
+		error = err
+		return
+	}
+
+	filename = file.Name()
+	crc = hash.Sum32()
+	return
+}
+
+func BenchmarkCrc32File_64MB(b *testing.B) {
+	var bytes int64 = 64 * MEGABYTE
+	b.SetBytes(int64(bytes))
+
+	filename, expected, err := makeRandomFile(bytes)
+	if err != nil {
+		b.Fatal(err)
+	}
+	defer func() {
+		maybePanic(os.Remove(filename))
+	}()
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		actual, err := Crc32File(filename)
+		if err != nil {
+			b.Fatal(err)
+		}
+		if expected != actual {
+			b.Fatalf("expected %08X, got %08X", expected, actual)
+		}
 	}
 }
