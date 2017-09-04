@@ -51,92 +51,9 @@ func (e Entry) Check() Result {
 		return errResult{err, e.Filename}
 	}
 	if e.ExpectedCRC != actualCRC {
-		return errMismatch{e.Filename, e.ExpectedCRC, actualCRC}
+		return mismatchResult{e.Filename, e.ExpectedCRC, actualCRC}
 	}
 	return okResult{e.Filename}
-}
-
-// TODO move result related code to another file, including err-summary.go
-
-// A Result represents the result of checking a single SFV entry.
-type Result interface {
-	fmt.Stringer      // format like md5sum(1) and co.
-	TAP(i int) string // format as a line of TAP (Test Anything Protocol)
-	Err() error       // nil if file exists and matches checksum
-}
-
-// okResult represents a file that exists and matches its expected checksum.
-type okResult struct {
-	filename string
-}
-
-func (r okResult) String() string {
-	return fmt.Sprintf("%s: OK", r.filename)
-}
-
-func (r okResult) TAP(i int) string {
-	return fmt.Sprintf("ok %d - %s", i, r.filename)
-}
-
-func (r okResult) Err() error {
-	return nil
-}
-
-// errResult represents an error that occurred during the calculation of the
-// CRC-32 checksum of the named file.
-type errResult struct {
-	error
-	filename string
-}
-
-func (r errResult) String() string {
-	return fmt.Sprintf("%s: ERROR %s", r.filename, r.error)
-}
-
-func (r errResult) TAP(i int) string {
-	return fmt.Sprintf("not ok %d - %s %s", i, r.filename, r.error)
-}
-
-func (r errResult) Err() error {
-	return r
-}
-
-// errMismatch represents a mismatch between the expected and actual CRC-32
-// checksums of the named file.
-type errMismatch struct {
-	Filename    string
-	ExpectedCRC uint32
-	ActualCRC   uint32
-}
-
-func (e errMismatch) String() string {
-	return fmt.Sprintf(
-		"%s: NOT OK, %s",
-		e.Filename,
-		e.Error(),
-	)
-}
-
-func (e errMismatch) Error() string {
-	return fmt.Sprintf(
-		"expected %08X got %08X",
-		e.ExpectedCRC,
-		e.ActualCRC,
-	)
-}
-
-func (e errMismatch) TAP(i int) string {
-	return fmt.Sprintf(
-		"not ok %d - expected %08X got %08X file %s",
-		i,
-		e.ExpectedCRC,
-		e.ActualCRC,
-		e.Filename,
-	)
-}
-
-func (e errMismatch) Err() error {
-	return e
 }
 
 func parseSFVLine(line string) (entry Entry, err error) {
