@@ -1,3 +1,13 @@
+/*
+
+Package sfv contains code for parsing and checking SFV (Simple File
+Verification) checksum files. SFV files are used to check for file corruption,
+but do not prove file authenticity, i.e., the check is not cryptographically
+secure.
+
+https://en.wikipedia.org/wiki/Simple_file_verification
+
+*/
 package sfv
 
 import (
