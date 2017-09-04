@@ -4,24 +4,24 @@ package sfv
 
 import (
 	"hash/crc32"
-	. "syscall"
+	"syscall"
 )
 
 func Crc32File(filename string) (crc uint32, error error) {
-	fd, err := Open(filename, O_RDONLY, 0)
+	fd, err := syscall.Open(filename, syscall.O_RDONLY, 0)
 	if err != nil {
 		error = err
 		return
 	}
 	defer func() {
-		err := Close(fd)
+		err := syscall.Close(fd)
 		if err != nil {
 			error = err
 		}
 	}()
 
-	var stat Stat_t
-	err = Fstat(fd, &stat)
+	var stat syscall.Stat_t
+	err = syscall.Fstat(fd, &stat)
 	if err != nil {
 		error = err
 		return
@@ -31,14 +31,14 @@ func Crc32File(filename string) (crc uint32, error error) {
 		return
 	}
 
-	buf, err := Mmap(fd, 0, int(stat.Size),
-		PROT_READ, MAP_SHARED)
+	buf, err := syscall.Mmap(fd, 0, int(stat.Size),
+		syscall.PROT_READ, syscall.MAP_SHARED)
 	if err != nil {
 		error = err
 		return
 	}
 	defer func() {
-		err := Munmap(buf)
+		err := syscall.Munmap(buf)
 		if err != nil {
 			error = err
 		}
