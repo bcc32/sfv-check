@@ -28,7 +28,7 @@ func (this ErrorSummary) Add(err error) {
 }
 
 func (this ErrorSummary) Summary() error {
-	if this.mismatches == 0 || this.fileErrors == 0 {
+	if this.mismatches == 0 && this.fileErrors == 0 {
 		return nil
 	}
 	return this
