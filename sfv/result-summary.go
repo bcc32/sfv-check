@@ -12,14 +12,11 @@ var errEmptyMultiError = errors.New("Error() called on empty multiError")
 type ResultSummary struct {
 	mismatches int
 	fileErrors int
-	totalTests int
 }
 
 // Add increments the appropriate errorSummary counters based on the type of the
 // argument.
 func (e *ResultSummary) Add(r Result) {
-	e.totalTests++
-
 	if err := r.Err(); err != nil {
 		if _, ok := err.(errMismatch); ok {
 			e.mismatches++
