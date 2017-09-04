@@ -42,10 +42,10 @@ func testCRC32(t *testing.T, expected uint32, data []byte) {
 
 	actual, err := tempFileCRC32(data)
 	if err != nil {
-		t.Fatal(err)
+		t.Error(err)
 	}
 	if actual != expected {
-		t.Fatalf("expected %08X, actual %08X", expected, actual)
+		t.Errorf("CRC-32(%X) = %08X; want %08X", data, actual, expected)
 	}
 }
 
@@ -57,18 +57,20 @@ func TestCRC32File_nonempty(t *testing.T) {
 	testCRC32(t, 0x7C9CA35A, []byte{0xDE, 0xAD, 0xBE, 0xEF})
 }
 
-func TestCRC32File_noFile(t *testing.T) {
-	_, err := sfv.CRC32File("/zzzzzzzz")
+func testCRC32NoFile(t *testing.T, filename string) {
+	t.Helper()
+	_, err := sfv.CRC32File(filename)
 	if err == nil {
-		t.Fatal("expected error")
+		t.Errorf("filename %q; expected error", filename)
 	}
 }
 
+func TestCRC32File_noFile(t *testing.T) {
+	testCRC32NoFile(t, "/zzzzzzzz")
+}
+
 func TestCRC32File_noFile_emptyName(t *testing.T) {
-	_, err := sfv.CRC32File("")
-	if err == nil {
-		t.Fatal("expected error")
-	}
+	testCRC32NoFile(t, "")
 }
 
 var random *rand.Rand
@@ -123,8 +125,8 @@ func BenchmarkCRC32File_64MB(b *testing.B) {
 		if err != nil {
 			b.Fatal(err)
 		}
-		if expected != actual {
-			b.Fatalf("expected %08X, got %08X", expected, actual)
+		if actual != expected {
+			b.Fatal("incorrect CRC-32")
 		}
 	}
 }
