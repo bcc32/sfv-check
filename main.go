@@ -86,11 +86,10 @@ func tapSFVFile(filename string, results *sfv.ErrorSummary) error {
 
 	log.Printf("1..%d\n", len(entries))
 
-	// TODO print out indices
-	for _, entry := range entries {
+	for i, entry := range entries {
 		result := entry.Check()
 		results.Add(result)
-		log.Print(result.TAP())
+		log.Print(result.TAP(i + 1))
 	}
 
 	return nil

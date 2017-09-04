@@ -60,9 +60,9 @@ func (e Entry) Check() Result {
 
 // A Result represents the result of checking a single SFV entry.
 type Result interface {
-	fmt.Stringer // format the Result like md5sum(1) and co.
-	TAP() string // format the Result as a line of TAP (Test Anything Protocol)
-	Err() error  // nil if file exists and matches checksum
+	fmt.Stringer      // format like md5sum(1) and co.
+	TAP(i int) string // format as a line of TAP (Test Anything Protocol)
+	Err() error       // nil if file exists and matches checksum
 }
 
 // okResult represents a file that exists and matches its expected checksum.
@@ -74,8 +74,8 @@ func (r okResult) String() string {
 	return fmt.Sprintf("%s: OK", r.filename)
 }
 
-func (r okResult) TAP() string {
-	return fmt.Sprintf("ok %s", r.filename)
+func (r okResult) TAP(i int) string {
+	return fmt.Sprintf("ok %d - %s", i, r.filename)
 }
 
 func (r okResult) Err() error {
@@ -93,8 +93,8 @@ func (r errResult) String() string {
 	return fmt.Sprintf("%s: ERROR %s", r.filename, r.error)
 }
 
-func (r errResult) TAP() string {
-	return fmt.Sprintf("not ok %s %s", r.filename, r.error)
+func (r errResult) TAP(i int) string {
+	return fmt.Sprintf("not ok %d - %s %s", i, r.filename, r.error)
 }
 
 func (r errResult) Err() error {
@@ -125,9 +125,10 @@ func (e errMismatch) Error() string {
 	)
 }
 
-func (e errMismatch) TAP() string {
+func (e errMismatch) TAP(i int) string {
 	return fmt.Sprintf(
-		"not ok expected %08X got %08X file %s",
+		"not ok %d - expected %08X got %08X file %s",
+		i,
 		e.ExpectedCRC,
 		e.ActualCRC,
 		e.Filename,
