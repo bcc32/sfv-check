@@ -36,28 +36,104 @@ func (e errParse) Error() string {
 	)
 }
 
-// ErrMismatch represents a mismatch between the expected and actual CRC-32
-// checksums of the named file.
-type ErrMismatch struct {
-	Filename    string
-	ExpectedCRC uint32
-	ActualCRC   uint32
-}
-
-func (e ErrMismatch) Error() string {
-	return fmt.Sprintf(
-		"%s: NOT OK, expected %08X got %08X",
-		e.Filename,
-		e.ExpectedCRC,
-		e.ActualCRC,
-	)
-}
-
 // Entry represents an SFV line, consisting of the named file and its expected
 // CRC-32 checksum.
 type Entry struct {
 	Filename    string
 	ExpectedCRC uint32
+}
+
+// Check calculates the CRC-32 checksum of the named file and compares it to the
+// expected checksum, returning a Result characterizing the outcome.
+func (e Entry) Check() Result {
+	actualCRC, err := CRC32File(e.Filename)
+	if err != nil {
+		return errResult{err, e.Filename}
+	}
+	if e.ExpectedCRC != actualCRC {
+		return errMismatch{e.Filename, e.ExpectedCRC, actualCRC}
+	}
+	return okResult{e.Filename}
+}
+
+// A Result represents the result of checking a single SFV entry.
+type Result interface {
+	fmt.Stringer // format the Result like md5sum(1) and co.
+	TAP() string // format the Result as a line of TAP (Test Anything Protocol)
+	Err() error  // nil if file exists and matches checksum
+}
+
+// okResult represents a file that exists and matches its expected checksum.
+type okResult struct {
+	filename string
+}
+
+func (r okResult) String() string {
+	return fmt.Sprintf("%s: OK", r.filename)
+}
+
+func (r okResult) TAP() string {
+	return fmt.Sprintf("ok %s", r.filename)
+}
+
+func (r okResult) Err() error {
+	return nil
+}
+
+// errResult represents an error that occurred during the calculation of the
+// CRC-32 checksum of the named file.
+type errResult struct {
+	error
+	filename string
+}
+
+func (r errResult) String() string {
+	return fmt.Sprintf("%s: ERROR %s", r.filename, r.error)
+}
+
+func (r errResult) TAP() string {
+	return fmt.Sprintf("not ok %s %s", r.filename, r.error)
+}
+
+func (r errResult) Err() error {
+	return r
+}
+
+// errMismatch represents a mismatch between the expected and actual CRC-32
+// checksums of the named file.
+type errMismatch struct {
+	Filename    string
+	ExpectedCRC uint32
+	ActualCRC   uint32
+}
+
+func (e errMismatch) String() string {
+	return fmt.Sprintf(
+		"%s: NOT OK, %s",
+		e.Filename,
+		e.Error(),
+	)
+}
+
+func (e errMismatch) Error() string {
+	return fmt.Sprintf(
+		"expected %08X got %08X",
+		e.ExpectedCRC,
+		e.ActualCRC,
+	)
+}
+
+func (e errMismatch) TAP() string {
+	return fmt.Sprintf(
+		"not ok expected %08X got %08X file %s",
+		e.ExpectedCRC,
+		e.ActualCRC,
+		e.Filename,
+	)
+}
+
+func (e errMismatch) Err() error {
+	return e
 }
 
 func parseSfvLine(line string) (entry Entry, err error) {

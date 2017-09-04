@@ -16,9 +16,9 @@ type ErrorSummary struct {
 
 // Add increments the appropriate errorSummary counters based on the type of the
 // argument.
-func (e *ErrorSummary) Add(err error) {
-	if err != nil {
-		if _, ok := err.(ErrMismatch); ok {
+func (e *ErrorSummary) Add(r Result) {
+	if err := r.Err(); err != nil {
+		if _, ok := err.(errMismatch); ok {
 			e.mismatches++
 		} else {
 			e.fileErrors++

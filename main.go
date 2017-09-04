@@ -36,7 +36,7 @@ func init() {
 }
 
 func checkSfvFile(filename string) error {
-	var fileErrors sfv.ErrorSummary
+	var results sfv.ErrorSummary
 
 	scanner, err := sfv.NewFileScanner(filename)
 	if err != nil {
@@ -46,27 +46,12 @@ func checkSfvFile(filename string) error {
 	for {
 		for scanner.Scan() {
 			entry := scanner.Entry()
-			crc32, err := sfv.CRC32File(entry.Filename)
+			result := entry.Check()
 
-			if err != nil {
-				fileErrors.Add(err)
-				log.Print(err)
-				continue
-			}
+			results.Add(result)
 
-			if entry.ExpectedCRC != crc32 {
-				err := sfv.ErrMismatch{
-					Filename:    entry.Filename,
-					ExpectedCRC: entry.ExpectedCRC,
-					ActualCRC:   crc32,
-				}
-				log.Print(err)
-				fileErrors.Add(err)
-				continue
-			}
-
-			if !quiet {
-				log.Printf("%s: OK", entry.Filename)
+			if !quiet || result.Err() != nil {
+				log.Print(result.String())
 			}
 		}
 		if err := scanner.Err(); err != nil {
@@ -80,7 +65,7 @@ func checkSfvFile(filename string) error {
 		return err
 	}
 
-	return fileErrors.Summary()
+	return results.Summary()
 }
 
 func main() {
