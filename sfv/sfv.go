@@ -179,6 +179,13 @@ func NewFileScanner(filename string) (*FileScanner, error) {
 	if err != nil {
 		return nil, err
 	}
+	stat, err := file.Stat()
+	if err != nil {
+		return nil, err
+	}
+	if !stat.Mode().IsRegular() {
+		return nil, errors.New("not a regular file: " + filename)
+	}
 
 	return &FileScanner{
 		input:    bufio.NewScanner(file),

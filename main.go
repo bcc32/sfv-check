@@ -95,7 +95,10 @@ func main() {
 	var results sfv.ErrorSummary
 
 	for _, file := range sfvFiles {
-		checkSFVFile(file, &results)
+		err := checkSFVFile(file, &results)
+		if err != nil {
+			log.Print(err)
+		}
 	}
 
 	if err := results.Summary(); err != nil {
