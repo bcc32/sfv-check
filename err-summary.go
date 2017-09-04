@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"reflect"
 
 	"github.com/bcc32/sfv-check/sfv"
 )
@@ -18,15 +17,13 @@ type errorSummary struct {
 }
 
 // Add increments the appropriate errorSummary counters based on the type of the
-// argument. If the argument is not a recognized error type, Add panics.
+// argument.
 func (e *errorSummary) Add(err error) {
 	if err != nil {
 		if _, ok := err.(sfv.ErrMismatch); ok {
 			e.mismatches++
-		} else if _, ok := err.(sfv.ErrFileOpen); ok {
-			e.fileErrors++
 		} else {
-			panic("not a recognized error: " + reflect.TypeOf(err).String())
+			e.fileErrors++
 		}
 	}
 }
@@ -51,7 +48,7 @@ func (e errorSummary) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"%d bad CRCs, %d not found",
+		"%d bad CRCs, %d file errors",
 		e.mismatches,
 		e.fileErrors,
 	)
