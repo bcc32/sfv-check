@@ -46,3 +46,17 @@ func TestCrc32File_empty(t *testing.T) {
 func TestCrc32File_nonempty(t *testing.T) {
 	testCrc32(t, 0x7C9CA35A, []byte{0xDE, 0xAD, 0xBE, 0xEF})
 }
+
+func TestCrc32File_noFile(t *testing.T) {
+	_, err := Crc32File("/zzzzzzzz")
+	if err == nil {
+		t.Fatal("expected error")
+	}
+}
+
+func TestCrc32File_noFile_emptyName(t *testing.T) {
+	_, err := Crc32File("")
+	if err == nil {
+		t.Fatal("expected error")
+	}
+}
