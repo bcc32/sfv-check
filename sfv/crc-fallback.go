@@ -8,6 +8,7 @@ import (
 	"os"
 )
 
+// Crc32File computes the IEEE CRC-32 checksum of the named file.
 func Crc32File(filename string) (crc uint32, error error) {
 	file, err := os.Open(filename)
 	if err != nil {

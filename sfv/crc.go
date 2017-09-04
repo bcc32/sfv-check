@@ -9,10 +9,10 @@ type errFileOpen struct {
 	filename string
 }
 
-func (this errFileOpen) Error() string {
+func (e errFileOpen) Error() string {
 	return fmt.Sprintf(
 		"%s: NOT OK, %s",
-		this.filename,
-		this.err,
+		e.filename,
+		e.err,
 	)
 }

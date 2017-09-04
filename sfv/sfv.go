@@ -17,12 +17,12 @@ type errParse struct {
 	lineNumber  int
 }
 
-func (this errParse) Error() string {
+func (e errParse) Error() string {
 	return fmt.Sprintf(
 		"%s:%d: %s",
-		this.sfvFilename,
-		this.lineNumber,
-		this.err,
+		e.sfvFilename,
+		e.lineNumber,
+		e.err,
 	)
 }
 
@@ -32,12 +32,12 @@ type ErrMismatch struct {
 	ActualCrc   uint32
 }
 
-func (this ErrMismatch) Error() string {
+func (e ErrMismatch) Error() string {
 	return fmt.Sprintf(
 		"%s: NOT OK, expected %08X got %08X",
-		this.Filename,
-		this.ExpectedCrc,
-		this.ActualCrc,
+		e.Filename,
+		e.ExpectedCrc,
+		e.ActualCrc,
 	)
 }
 
@@ -70,7 +70,7 @@ func parseSfvLine(line string) (entry Entry, err error) {
 	return
 }
 
-type SfvFileScanner struct {
+type FileScanner struct {
 	input      *bufio.Scanner
 	filename   string
 	entry      Entry
@@ -78,22 +78,22 @@ type SfvFileScanner struct {
 	lineNumber int
 }
 
-func NewSfvFileScanner(filename string) (*SfvFileScanner, error) {
+func NewSfvFileScanner(filename string) (*FileScanner, error) {
 	file, err := os.Open(filename)
 	if err != nil {
 		return nil, err
 	}
 
-	return &SfvFileScanner{
+	return &FileScanner{
 		input:    bufio.NewScanner(file),
 		filename: filename,
 	}, nil
 }
 
-func (this *SfvFileScanner) Scan() bool {
-	for this.input.Scan() {
-		line := this.input.Text()
-		this.lineNumber++
+func (fs *FileScanner) Scan() bool {
+	for fs.input.Scan() {
+		line := fs.input.Text()
+		fs.lineNumber++
 
 		if strings.HasPrefix(line, ";") {
 			continue
@@ -101,23 +101,23 @@ func (this *SfvFileScanner) Scan() bool {
 
 		entry, err := parseSfvLine(line)
 		if err != nil {
-			this.err = errParse{err, this.filename, this.lineNumber}
+			fs.err = errParse{err, fs.filename, fs.lineNumber}
 			return false
 		}
 
-		this.entry = entry
+		fs.entry = entry
 		return true
 	}
 
 	return false
 }
 
-func (this SfvFileScanner) Entry() Entry {
-	return this.entry
+func (fs FileScanner) Entry() Entry {
+	return fs.entry
 }
 
-func (this SfvFileScanner) Err() error {
-	err := this.err
-	this.err = nil
+func (fs FileScanner) Err() error {
+	err := fs.err
+	fs.err = nil
 	return err
 }
