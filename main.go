@@ -1,3 +1,6 @@
+// Command sfv-check accepts one or more SFV-formatted checksum files, and
+// verifies the contents of the files listed therein. Mismatches, file errors,
+// and success notifications are printed to standard output.
 package main
 
 import (
