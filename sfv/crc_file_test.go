@@ -2,14 +2,25 @@ package sfv
 
 import (
 	"io/ioutil"
+	"os"
 	"testing"
 )
+
+func maybePanic(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
 
 func tempFileCrc32(data []byte) (uint32, error) {
 	f, err := ioutil.TempFile("", "")
 	if err != nil {
 		panic(err)
 	}
+	defer func() {
+		maybePanic(f.Close())
+		maybePanic(os.Remove(f.Name()))
+	}()
 
 	f.Write(data)
 
