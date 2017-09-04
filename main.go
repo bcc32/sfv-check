@@ -35,9 +35,7 @@ func init() {
 	}
 }
 
-func checkSfvFile(filename string) error {
-	var results sfv.ErrorSummary
-
+func checkSfvFile(filename string, results *sfv.ErrorSummary) error {
 	scanner, err := sfv.NewFileScanner(filename)
 	if err != nil {
 		return err
@@ -80,18 +78,14 @@ func main() {
 
 	sfvFiles := flag.Args()
 
-	success := true
+	var results sfv.ErrorSummary
 
 	for _, file := range sfvFiles {
-		err := checkSfvFile(file)
-
-		if err != nil {
-			success = false
-			log.Printf("%s: %s\n", os.Args[0], err)
-		}
+		checkSfvFile(file, &results)
 	}
 
-	if !success {
+	if err := results.Summary(); err != nil {
+		log.Printf("%s: %s\n", os.Args[0], err)
 		os.Exit(1)
 	}
 }
