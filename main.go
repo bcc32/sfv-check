@@ -101,6 +101,10 @@ func main() {
 		}
 	}
 
+	if tap {
+		fmt.Printf("1..%d\n", results.TotalTests())
+	}
+
 	if err := results.Summary(); err != nil {
 		log.Printf("%s: %s\n", os.Args[0], err)
 		os.Exit(1)
