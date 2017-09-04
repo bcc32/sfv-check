@@ -45,7 +45,12 @@ func Crc32File(filename string) (crc uint32, error error) {
 	}()
 
 	hash := crc32.NewIEEE()
-	hash.Write(buf)
+	_, err = hash.Write(buf)
+	if err != nil {
+		error = err
+		return
+	}
+
 	crc = hash.Sum32()
 	return
 }
