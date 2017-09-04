@@ -11,7 +11,7 @@ import (
 func Crc32File(filename string) (uint32, error) {
 	file, err := os.Open(filename)
 	if err != nil {
-		return 0, errFileOpen{filename}
+		return 0, errFileOpen{err, filename}
 	}
 
 	hash := crc32.NewIEEE()
