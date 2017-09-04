@@ -1,4 +1,4 @@
-package sfv
+package sfv_test
 
 import (
 	"hash/crc32"
@@ -8,6 +8,8 @@ import (
 	"os"
 	"testing"
 	"time"
+
+	"github.com/bcc32/sfv-check/sfv"
 )
 
 const (
@@ -32,7 +34,7 @@ func tempFileCrc32(data []byte) (uint32, error) {
 
 	f.Write(data)
 
-	return Crc32File(f.Name())
+	return sfv.Crc32File(f.Name())
 }
 
 func testCrc32(t *testing.T, expected uint32, data []byte) {
@@ -56,14 +58,14 @@ func TestCrc32File_nonempty(t *testing.T) {
 }
 
 func TestCrc32File_noFile(t *testing.T) {
-	_, err := Crc32File("/zzzzzzzz")
+	_, err := sfv.Crc32File("/zzzzzzzz")
 	if err == nil {
 		t.Fatal("expected error")
 	}
 }
 
 func TestCrc32File_noFile_emptyName(t *testing.T) {
-	_, err := Crc32File("")
+	_, err := sfv.Crc32File("")
 	if err == nil {
 		t.Fatal("expected error")
 	}
@@ -117,7 +119,7 @@ func BenchmarkCrc32File_64MB(b *testing.B) {
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
-		actual, err := Crc32File(filename)
+		actual, err := sfv.Crc32File(filename)
 		if err != nil {
 			b.Fatal(err)
 		}
