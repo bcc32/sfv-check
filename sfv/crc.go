@@ -13,6 +13,6 @@ func (this errFileOpen) Error() string {
 	return fmt.Sprintf(
 		"%s: NOT OK, %s",
 		this.filename,
-		this.err.Error(),
+		this.err,
 	)
 }

@@ -22,7 +22,7 @@ func (this errParse) Error() string {
 		"%s:%d: %s",
 		this.sfvFilename,
 		this.lineNumber,
-		this.err.Error(),
+		this.err,
 	)
 }
 
