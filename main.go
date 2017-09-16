@@ -8,12 +8,14 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path"
 
 	"github.com/bcc32/sfv-check/sfv"
 )
 
 var quiet bool
 var tap bool
+var changeDir bool
 
 func init() {
 	log.SetFlags(0)
@@ -25,12 +27,17 @@ func init() {
 
 		defaultTap = false
 		usageTap   = "print results in TAP format (one SFV file only)"
+
+		defaultChangeDir = false
+		usageChangeDir   = "chdir to the directory containing each SFV file"
 	)
 
 	flag.BoolVar(&quiet, "quiet", defaultQuiet, usageQuiet)
 	flag.BoolVar(&quiet, "q", defaultQuiet, usageQuiet+" (shorthand)")
 
 	flag.BoolVar(&tap, "tap", defaultTap, usageTap)
+
+	flag.BoolVar(&changeDir, "cd", defaultChangeDir, usageChangeDir)
 
 	flag.Usage = func() {
 		fmt.Fprintf(
@@ -48,6 +55,15 @@ func checkSFVFile(filename string, results *sfv.ResultSummary) error {
 	scanner, err := sfv.NewFileScanner(filename)
 	if err != nil {
 		return err
+	}
+
+	if changeDir {
+		dir, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		os.Chdir(path.Dir(filename))
+		defer os.Chdir(dir)
 	}
 
 	for {
