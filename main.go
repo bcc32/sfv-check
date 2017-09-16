@@ -100,6 +100,15 @@ func tapSFVFile(filename string, results *sfv.ResultSummary) error {
 		return err
 	}
 
+	if changeDir {
+		dir, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		os.Chdir(path.Dir(filename))
+		defer os.Chdir(dir)
+	}
+
 	log.Printf("1..%d\n", len(entries))
 
 	for i, entry := range entries {
